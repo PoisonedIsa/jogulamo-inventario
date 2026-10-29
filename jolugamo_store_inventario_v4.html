@@ -1,0 +1,2017 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#655bd9">
+  <link rel="manifest" href="./jolugamo_manifest.webmanifest">
+  <link rel="icon" href="./jolugamo_icon.svg" type="image/svg+xml">
+  <meta name="description" content="Inventario de Jolugamo Store: pines, peluches, llaveros, figuras, máscaras y coleccionables con respaldo JSON.">
+  <title>Jolugamo Store | Inventario</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fc; --surface: #ffffff; --ink: #1c2940; --muted: #788399;
+      --line: #e9ecf3; --primary: #655bd9; --primary-dark: #5049b8;
+      --primary-soft: #f0eeff; --teal: #168d7b; --teal-soft: #e7f7f2;
+      --amber: #ad7a24; --amber-soft: #fff4df; --red: #bd5363;
+      --radius: 20px; --shadow: 0 15px 36px rgba(38, 51, 79, .045);
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .42; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(101,91,217,.25); outline-offset: 2px; }
+    svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .wrap { width: min(1200px, calc(100% - 44px)); margin: 0 auto; }
+    .topbar { height: 92px; display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+    .brand { display: flex; gap: 12px; align-items: center; text-decoration: none; color: inherit; }
+    .brand-mark { height: 41px; width: 41px; border-radius: 13px; color: white; background: linear-gradient(145deg, #7771ec, #5e52cb); display: grid; place-items: center; box-shadow: 0 7px 18px rgba(101,91,217,.18); }
+    .brand-mark svg { width: 22px; height: 22px; }
+    .brand-text { display: flex; flex-direction: column; line-height: 1.2; gap: 5px; }
+    .brand-text strong { letter-spacing: -.6px; font-weight: 780; font-size: 17px; }
+    .brand-text small { font-size: 10px; color: var(--muted); letter-spacing: 1.7px; font-weight: 770; }
+    .top-actions { display:flex; align-items:center; gap:12px; }
+    .save-indicator { display: flex; gap: 7px; align-items: center; color: #67768e; font-size: 12px; font-weight: 620; white-space: nowrap; }
+    .status-dot { height: 8px; width: 8px; border-radius: 50%; background: #34b697; box-shadow: 0 0 0 3px #e0f6ee; }
+    .button { border: 1px solid transparent; border-radius: 12px; display: inline-flex; justify-content: center; align-items: center; gap: 8px; padding: 11px 15px; min-height: 44px; background: white; color: var(--ink); font-weight: 720; font-size: 13px; transition: transform .12s ease, background .12s ease, border-color .12s ease; white-space: nowrap; }
+    .button:hover:not(:disabled) { transform: translateY(-1px); }
+    .button svg { height: 17px; width: 17px; }
+    .button-primary { background: var(--primary); color: white; box-shadow: 0 6px 18px rgba(101,91,217,.16); }
+    .button-primary:hover:not(:disabled) { background: var(--primary-dark); }
+    .button-outline { border-color: #e3e6ef; }
+    .button-outline:hover:not(:disabled) { background: #f8f8ff; border-color: #cfc9f9; }
+    .button-soft { background: var(--primary-soft); color: var(--primary); }
+    .button-quiet { background: transparent; color: #78839a; }
+    .button-quiet:hover:not(:disabled) { background: #f0f1f7; }
+    .eyebrow { margin: 0 0 12px; display: inline-flex; align-items: center; gap: 8px; font-weight: 760; font-size: 11px; letter-spacing: 1.7px; text-transform: uppercase; color: var(--primary); }
+    .eyebrow .line { display: inline-block; height: 2px; width: 19px; border-radius: 2px; background: #a69df2; }
+    .hero { padding: 33px 36px 31px; border-radius: 26px; border: 1px solid #ebeafb; background: linear-gradient(120deg, #ffffff 12%, #f7f5ff 100%); position: relative; overflow: hidden; }
+    .hero:after { content: ""; width: 240px; height: 240px; border: 1px solid rgba(124,115,227,.09); border-radius: 50%; position: absolute; top: -120px; right: -30px; box-shadow: 0 0 0 45px rgba(124,115,227,.035), 0 0 0 95px rgba(124,115,227,.022); pointer-events: none; }
+    .hero h1 { font-size: clamp(29px, 4vw, 44px); letter-spacing: -1.8px; line-height: 1.16; font-weight: 790; margin: 0 0 13px; max-width: 680px; position:relative; z-index:1; }
+    .hero p:not(.eyebrow) { margin: 0; max-width: 610px; font-size: 14px; color: #718098; line-height: 1.75; position:relative; z-index:1; }
+    .hero-bottom { margin-top: 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; position:relative; z-index:1; }
+    .hero-label { margin-left: 3px; color: #9198a8; font-size: 11px; }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+    .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 19px 21px 18px; min-width: 0; box-shadow: var(--shadow); }
+    .stat-head { display:flex; align-items:center; justify-content:space-between; gap:9px; margin-bottom:12px; }
+    .stat-name { color: #7f889e; font-size: 12px; font-weight: 650; }
+    .stat-icon { width: 31px; height: 31px; background: #f4f2ff; border-radius: 10px; color: var(--primary); display:grid; place-items:center; }
+    .stat-icon svg { width: 16px; height: 16px; }
+    .stat-icon.teal { background: #e8f8f2; color: #129680; }
+    .stat-icon.amber { background: #fff4df; color: #ba8c33; }
+    .stat-icon.blue { background: #eaf2ff; color: #648ad9; }
+    .stat strong { display:block; font-size: 28px; letter-spacing: -1px; line-height:1.1; font-variant-numeric:tabular-nums; }
+    .stat-foot { color: #a0a9b7; font-size: 11px; margin-top: 8px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 286px; gap: 23px; margin: 34px 0 65px; align-items:start; }
+    .section-header { display:flex; align-items:end; justify-content:space-between; gap:12px; margin-bottom: 18px; }
+    .section-header h2 { font-size: 20px; line-height: 1.25; letter-spacing:-.7px; margin:0 0 5px; }
+    .section-header p { margin:0; font-size:12px; color: var(--muted); }
+    .count-chip { background: #ece9ff; border-radius: 999px; color: var(--primary); font-weight:750; font-size: 11px; padding:5px 10px; white-space:nowrap; }
+    .toolbar { background: white; border:1px solid var(--line); padding:12px; border-radius:17px; display:flex; gap:10px; align-items:center; margin-bottom:13px; }
+    .search { position:relative; flex:1; min-width:120px; }
+    .search svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color: #9aa3b5; width:18px; height:18px; }
+    .search input { border:1px solid transparent; border-radius:11px; background:#f6f7fb; width:100%; height:43px; padding:0 12px 0 39px; outline:none; font-size:13px; color:var(--ink); }
+    .search input:focus { border-color:#aaa5ea; background:white; }
+    .toolbar select { border:1px solid #eceef4; border-radius:11px; padding:0 30px 0 12px; background:#fff; height:43px; color:#68758c; font-weight:650; font-size:12px; max-width:156px; }
+    .filters { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding: 2px 0 14px; }
+    .filters::-webkit-scrollbar { display:none; }
+    .filter { padding: 7px 13px; border-radius: 999px; border:1px solid #e7eaf1; font-size:12px; color:#77839a; background:#fff; white-space:nowrap; font-weight:700; min-height:36px; }
+    .filter[aria-pressed="true"] { color:var(--primary); background:#efedff; border-color:#e3ddff; }
+    .items { display:flex; flex-direction:column; gap:10px; }
+    .item { display:grid; grid-template-columns: 47px minmax(0,1fr) auto; align-items:center; column-gap:14px; background:white; border:1px solid var(--line); border-radius:17px; padding:15px 16px; box-shadow:var(--shadow); }
+    .item-visual { width:47px; height:47px; display:grid; place-items:center; border-radius:14px; background:#f0edff; color:#7a66cc; }
+    .item-visual svg { width:23px; height:23px; }
+    .item-visual.peluches { color:#d18b82; background:#fff0ed; }
+    .item-visual.accesorios { color:#7c8cae; background:#eff3fa; }
+    .item-visual.coleccionables { color:#bb8b3f; background:#fff4e2; }
+    .item-visual.pines { color:#9464b9; background:#f7efff; }
+    .item-visual.llaveros { color:#358e83; background:#eaf8f5; }
+    .item-visual.mascaras { color:#757890; background:#edeef4; }
+    .item-visual.figuras { color:#ce9d42; background:#fff6e5; }
+    .category-group { display:flex; flex-direction:column; gap:10px; min-width:0; }
+    .category-group + .category-group { margin-top:15px; }
+    .category-group-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 4px 3px; }
+    .category-group-head h3 { display:flex; align-items:center; gap:9px; font-size:15px; margin:0; letter-spacing:-.25px; }
+    .category-group-head .group-count { font-size:11px; color:#78869d; font-weight:700; white-space:nowrap; }
+    .group-mark { display:inline-block; height:10px; width:10px; border-radius:3px; background:#7d71e0; flex-shrink:0; }
+    .pin-card { background:linear-gradient(145deg,#fff,#faf7ff); border-color:#eee7fa; }
+    .pin-copy { color:#748095; font-size:12px; line-height:1.65; margin:0 0 12px; }
+    .pin-stock { display:flex; align-items:baseline; gap:9px; margin-bottom:12px; }
+    .pin-stock strong { font-size:28px; letter-spacing:-1px; }
+    .pin-stock span { font-size:11px; color:#8a94a6; }
+    .pin-add { width:100%; font-size:12px; white-space:normal; }
+
+    .item-main { min-width:0; }
+    .item-title-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .item h3 { font-size:13px; line-height:1.45; letter-spacing:-.1px; font-weight:770; margin:0; overflow-wrap:anywhere; }
+    .item-meta { display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:11px; color:#9da5b6; margin-top:5px; }
+    .item-meta .bullet { color:#d3d8e2; }
+    .item-note { margin: 7px 0 0; color:#7c879a; font-size:11px; overflow-wrap:anywhere; }
+    .pill { display:inline-flex; border-radius:6px; padding:3px 6px; font-size:10px; font-weight:700; line-height:1.2; }
+    .pill-good { background: var(--teal-soft); color:var(--teal); }
+    .pill-pending { background:var(--amber-soft); color:var(--amber); }
+    .pill-empty { background:#fff0f1; color:var(--red); }
+    .item-actions { display:flex; align-items:center; gap:11px; }
+    .quantity-block { min-width:75px; text-align:right; }
+    .quantity-block strong { display:block; font-size:18px; letter-spacing:-.6px; font-variant-numeric:tabular-nums; line-height:1.3; }
+    .quantity-block small { display:block; font-size:10px; color:#99a3b5; white-space:nowrap; }
+    .stepper { border:1px solid #e9ebf2; border-radius:10px; overflow:hidden; display:flex; align-items:center; height:36px; }
+    .stepper button { height:35px; width:34px; display:grid; place-items:center; background:#fff; border:0; color:#65728a; }
+    .stepper button:hover:not(:disabled) { background:var(--primary-soft); color:var(--primary); }
+    .stepper svg { width:14px; height:14px; }
+    .stepper span { display:block; width:1px; height:16px; background:#e9ebf2; }
+    .item-more { display:flex; gap:4px; padding-left:3px; border-left:1px solid #eff0f5; }
+    .icon-button { display:grid; place-items:center; width:34px; height:35px; border:0; background:transparent; color:#9ba5b6; border-radius:9px; }
+    .icon-button:hover { background:#f3f1ff; color:var(--primary); }
+    .icon-button svg { width:17px; height:17px; }
+    .icon-button.checked { color:var(--teal); }
+    .side { position:sticky; top:20px; display:flex; flex-direction:column; gap:15px; }
+    .side-card { border:1px solid var(--line); border-radius:19px; background:white; padding:20px; box-shadow:var(--shadow); }
+    .side-heading { display:flex; align-items:center; gap:10px; margin:0 0 17px; }
+    .side-heading svg { color:var(--primary); width:18px; height:18px; }
+    .side-heading h3 { margin:0; font-size:13px; font-weight:770; }
+    .progress-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:12px; color:#7e899e; }
+    .progress-meta strong { font-size:17px; color:var(--ink); }
+    .progress { width:100%; background:#eff0f7; height:9px; border-radius:99px; overflow:hidden; }
+    .progress-fill { height:100%; width:0; background:linear-gradient(90deg,#6c62de,#39b9a5); border-radius:99px; transition:width .2s ease; }
+    .side-description { font-size:11px; line-height:1.75; color:#9aa5b5; margin:12px 0 0; }
+    .category-row { display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:9px 0; border-bottom:1px solid #f1f2f6; gap:7px; }
+    .category-row:last-child { border-bottom:0; padding-bottom:0; }
+    .category-left { display:flex; align-items:center; gap:9px; min-width:0; }
+    .category-left span:last-child { color:#718095; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .category-dot { width:8px; height:8px; background:#8c81ed; border-radius:50%; flex-shrink:0; }
+    .category-row strong { font-size:12px; font-variant-numeric:tabular-nums; }
+    .backup-card { background:linear-gradient(150deg,#fdfcff,#f3f1ff); border-color:#eae6fb; }
+    .backup-card p { margin:0 0 16px; color:#8791a6; font-size:12px; line-height:1.75; }
+    .backup-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .backup-actions .button { padding:9px 10px; font-size:11px; flex:1; }
+    .footnote { display:flex; justify-content:space-between; flex-wrap:wrap; color:#a0a9b7; font-size:11px; padding:0 0 20px; gap:8px; }
+    .empty { border:1px dashed #dde0ed; background:#fff; border-radius:18px; padding:48px 20px; text-align:center; }
+    .empty-icon { border-radius:15px; background:#f1efff; color:var(--primary); display:grid; place-items:center; height:50px; width:50px; margin:0 auto 13px; }
+    .empty h3 { margin:0 0 6px; font-size:16px; }
+    .empty p { margin:0; color:var(--muted); font-size:12px; }
+    dialog { width:min(500px, calc(100% - 26px)); max-height:min(86dvh, 810px); overflow-y:auto; margin:auto; border:1px solid #e5e6f0; border-radius:22px; padding:0; box-shadow:0 30px 90px rgba(25,32,57,.23); color:var(--ink); }
+    dialog::backdrop { background:rgba(27,35,56,.51); backdrop-filter: blur(4px); }
+    .dialog-head { display:flex; justify-content:space-between; align-items:start; gap:15px; padding:25px 26px 16px; }
+    .dialog-head h2 { letter-spacing:-.7px; font-size:22px; margin:0 0 5px; }
+    .dialog-head p { font-size:12px; color:#8490a4; margin:0; }
+    .dialog-body { padding:4px 26px 18px; display:grid; gap:15px; }
+    .field { display:flex; flex-direction:column; gap:6px; min-width:0; }
+    .field label { font-size:12px; font-weight:740; }
+    .field input, .field textarea, .field select { background:#f8f9fc; border:1px solid #e8eaf2; border-radius:11px; padding:11px 12px; color:var(--ink); outline:0; width:100%; font-size:13px; }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color:#aca6e9; background:#fff; }
+    .field textarea { resize:vertical; min-height:80px; }
+    .field small { color:#9aa5b6; font-size:11px; }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+    .check-label { display:flex; gap:10px; align-items:center; font-size:12px; font-weight:700; padding:9px 0; }
+    .check-label input { accent-color:var(--teal); height:17px; width:17px; }
+    .dialog-foot { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:17px 26px 23px; border-top:1px solid #f0f1f5; }
+    .dialog-foot div { display:flex; gap:8px; }
+    .danger { color:var(--red); }
+    .toast { position:fixed; bottom:25px; left:50%; transform:translate(-50%,25px); pointer-events:none; opacity:0; background:#253349; color:white; border-radius:12px; padding:12px 17px; box-shadow:0 15px 38px rgba(25,32,57,.24); max-width:calc(100% - 32px); font-size:12px; font-weight:650; z-index:100; transition: opacity .2s ease, transform .2s ease; text-align:center; }
+    .toast.show { transform:translate(-50%,0); opacity:1; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media(max-width:1060px) { .layout { grid-template-columns:minmax(0,1fr) 250px; gap:16px; } .item { grid-template-columns:42px minmax(0,1fr); } .item-visual { height:42px; width:42px; } .item-actions { grid-column:2; margin-top:12px; justify-content:space-between; } .item-more { margin-left:auto; } }
+    @media(max-width:760px) { .wrap { width:min(100% - 28px, 570px); } .topbar { height:77px; } .save-indicator { font-size:0; gap:0; } .save-indicator .status-dot { margin-right:5px; } .top-actions { gap:6px; } .top-actions .button { padding:10px 12px; } .top-actions .button .button-label { display:none; } .hero { padding:27px 22px; border-radius:21px; } .hero h1 { font-size:31px; letter-spacing:-1.3px; } .hero p:not(.eyebrow) { font-size:13px; } .hero-bottom .button { font-size:12px; } .stats { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; } .stat { padding:16px; } .stat strong { font-size:26px; } .stat-head { margin-bottom:9px; } .layout { display:block; margin-top:29px; } .side { margin-top:22px; position:static; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .side-card { padding:17px; } .backup-card, .pin-card { grid-column:1/-1; } .footnote { padding-top:3px; } }
+    @media(max-width:470px) { .topbar { height:70px; } .brand-mark { width:36px; height:36px; } .brand-text strong { font-size:15px; } .brand-text small { font-size:9px; } .hero { padding:23px 19px; } .hero h1 { font-size:28px; } .eyebrow { font-size:10px; letter-spacing:1.2px; } .hero-label { flex-basis:100%; } .stats { gap:9px; } .stat { padding:13px 14px; border-radius:15px; } .stat-name { font-size:11px; } .stat strong { font-size:25px; } .stat-icon { width:28px; height:28px; } .toolbar { flex-wrap:wrap; padding:9px; } .search { flex:1 1 100%; } .toolbar select { flex:1; max-width:none; width:50%; } .item { padding:13px; column-gap:10px; } .item h3 { font-size:12.5px; } .item-actions { gap:7px; } .quantity-block { min-width:63px; } .quantity-block strong { font-size:17px; } .stepper button { width:35px; } .item-more { padding-left:0; } .icon-button { width:31px; } .side { grid-template-columns:1fr; } .backup-card, .pin-card { grid-column:auto; } .dialog-head { padding:21px 19px 13px; } .dialog-body { padding:4px 19px 17px; } .dialog-foot { padding:15px 19px 19px; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition-duration:.01ms!important; scroll-behavior:auto!important; } }
+
+    .field[hidden], #packField[hidden], #packsCountField[hidden] { display:none; }
+    /* Colecciones de pines: organización compacta para pantallas pequeñas */
+    .pin-collections { display:grid; gap:9px; }
+    .pin-collection { border:1px solid #e9e7f2; border-radius:15px; overflow:hidden; background:#fff; }
+    .pin-collection summary { list-style:none; display:flex; gap:10px; align-items:center; cursor:pointer; padding:15px 16px; background:linear-gradient(110deg,#fbfaff,#f6f7fd); }
+    .pin-collection summary::-webkit-details-marker { display:none; }
+    .pin-collection summary > svg { width:15px; height:15px; flex-shrink:0; color:#8d84ab; transition:transform .2s ease; }
+    .pin-collection[open] summary > svg { transform:rotate(180deg); }
+    .pin-collection-name { display:flex; align-items:center; gap:8px; min-width:0; flex:1; color:#344058; font-size:13px; font-weight:770; }
+    .pin-collection-name svg { width:16px; height:16px; flex-shrink:0; color:#9a70c4; }
+    .pin-collection-count { color:#858da1; white-space:nowrap; font-size:11px; }
+    .pin-collection-items { padding:10px; display:grid; gap:8px; }
+    @media (max-width:470px) { .pin-collection summary { padding:13px 11px; gap:6px; flex-wrap:wrap; } .pin-collection-name { flex-basis:54%; font-size:12px; } .pin-collection-count { font-size:10px; } .pin-collection-items { padding:8px; } }
+
+    /* V4: venta rápida, tachado, estados y ritmo visual móvil */
+    .sold-out {border-color:#d9e6e2!important;background:#f5f9f7!important;opacity:.79}
+    .sold-out .item-main h3 {text-decoration:line-through;text-decoration-thickness:1.7px;text-decoration-color:#83938e;color:#778783}
+    .sold-out .item-visual {filter:grayscale(.45);opacity:.68}
+    .sold-out .quantity-block strong {color:#7b8d86}
+    .item.sale-partial {border-left:3px solid #78b8a2}
+    .pill-sold {background:#dff3eb;color:#157359}
+    .pill-partial {background:#eff8f3;color:#38866c}
+    .item .sold-subtitle {display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:9px 0 0;font-size:11px;font-weight:700;color:#438a78}
+    .sale-strip {display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:11px}
+    .sale-button {padding:6px 12px;border-radius:9px;min-height:34px;font-size:11px;font-weight:750;border:1px solid #c8eadd;background:#e9f7f1;color:#167a60}
+    .sale-button:hover:not(:disabled) {background:#d4efe3}
+    .sale-button.secondary {color:#646d82;background:#f5f6f9;border-color:#e1e7ed}
+    .sale-button.all {color:#5c61a4;background:#eff0ff;border-color:#e5e7ff}
+    .sale-button:disabled {opacity:.45}
+    .warning-card {border-color:#f0dfc4;background:linear-gradient(145deg,#fff,#fffaf2)}
+    .issue-line {font-size:12px;line-height:1.6;color:#86613f;padding:10px;border:1px solid #f0e4ce;border-radius:11px;background:#fffbf3}
+    .issue-ok {color:#3e8971}
+    .pin-collection .collection-warning {font-size:11px;color:#98683a;background:#fff4e1;border:1px solid #f5e5c6;border-radius:8px;padding:4px 8px}
+    .category-row small {display:block;font-size:10px;color:#9ba1b0}
+    .item-actions {align-items:center}
+    .item .item-main h3 {overflow-wrap:anywhere}
+    .stat strong {font-variant-numeric:tabular-nums}
+    .hint-inline {font-size:11px;color:#8894a5}
+    @media(max-width:760px){.sale-strip {gap:5px}.sale-button{font-size:11px;padding:6px 9px}.item{padding:12px}.item-actions{gap:8px}}
+    @media(max-width:470px){.sale-button.all{width:100%}.item-main{min-width:0}.sale-strip{margin-top:10px}}
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="m3 7 9-4 9 4-9 4-9-4Zm0 0v10l9 4 9-4V7M12 11v10"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5.5V3h6v2.5M9 11h6M9 15h6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5 5.5-6"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="m4 17-.5 3.5L7 20l12-12-3-3L4 17ZM14.5 6.5l3 3"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 17V5m-5 5 5-5 5 5M4 17v4h16v-4"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5 19 19M19 5 5 19"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m3 9 9-6 9 6-9 6-9-6Zm0 5 9 6 9-6M3 18l9 5 9-5"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20 5c-2-2-5.5-1.5-8 1.2C9.5 3.5 6 3 4 5 1.5 7.5 3 11 5 13l7 7 7-7c2-2 3.5-5.5 1-8Z"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M4 4h9l8 8-9 9-8-8V4Z"/><circle cx="9" cy="9" r="1.5"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2Z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 2 8 4v6c0 5-3.4 8-8 10-4.6-2-8-5-8-10V6l8-4Z"/><path d="m8 12 2.5 2.5 5-5"/></symbol>
+  </svg>
+
+  <div class="wrap">
+    <header class="topbar">
+      <a href="#inicio" class="brand" aria-label="Jolugamo Store, inicio">
+        <span class="brand-mark"><svg><use href="#i-box"></use></svg></span>
+        <span class="brand-text"><strong>Jolugamo<span style="color:#6c62d8">.</span> Store</strong><small>INVENTARIO · V4.0</small></span>
+      </a>
+      <div class="top-actions">
+        <span class="save-indicator" id="saveStatus" title="Datos guardados en este dispositivo"><span class="status-dot"></span><span id="saveStatusText">Almacenamiento local</span></span>
+        <button class="button button-primary" id="topAdd" type="button"><svg><use href="#i-plus"></use></svg><span class="button-label">Nuevo artículo</span></button>
+      </div>
+    </header>
+
+    <main id="inicio">
+      <section class="hero" aria-labelledby="heroTitle">
+        <p class="eyebrow"><span class="line"></span> Gestión comercial · Jolugamo Store</p>
+        <h1 id="heroTitle">Tu tienda, bien<br>organizada.</h1>
+        <p>Revisa tu inventario, marca ventas y tacha los productos agotados. Los datos se guardan en este dispositivo, incluso sin conexión.</p>
+        <div class="hero-bottom">
+          <button id="heroAdd" class="button button-primary" type="button"><svg><use href="#i-plus"></use></svg> Agregar producto</button>
+          <button id="heroExport" class="button button-outline" type="button"><svg><use href="#i-download"></use></svg> Exportar datos</button>
+          <span class="hero-label">Offline · guardado automático</span>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="Indicadores del inventario">
+        <article class="stat"><div class="stat-head"><span class="stat-name">En inventario</span><span class="stat-icon"><svg><use href="#i-box"></use></svg></span></div><strong id="totalUnits">243</strong><div class="stat-foot">Incluye 1 pin dañado</div></article>
+        <article class="stat"><div class="stat-head"><span class="stat-name">Disponibles para vender</span><span class="stat-icon blue"><svg><use href="#i-clipboard"></use></svg></span></div><strong id="totalAvailable">242</strong><div class="stat-foot">Stock descontando los dañados</div></article>
+        <article class="stat"><div class="stat-head"><span class="stat-name">Unidades vendidas</span><span class="stat-icon amber"><svg><use href="#i-layers"></use></svg></span></div><strong id="totalSold">0</strong><div class="stat-foot">Acumulado de ventas marcadas</div></article>
+        <article class="stat"><div class="stat-head"><span class="stat-name">Revisados</span><span class="stat-icon teal"><svg><use href="#i-check-circle"></use></svg></span></div><strong id="totalChecked">0/80</strong><div class="stat-foot">Marcaje de revisión</div></article>
+      </section>
+
+      <div class="layout">
+        <section aria-labelledby="itemsHeading">
+          <div class="section-header"><div><h2 id="itemsHeading">Inventario por secciones</h2><p>Pines, peluches, llaveros y cada tipo de producto por separado.</p></div><span id="shownCount" class="count-chip">80 registros</span></div>
+          <div class="toolbar">
+            <label class="search"><svg aria-hidden="true"><use href="#i-search"></use></svg><span class="sr-only">Buscar por nombre, código o nota</span><input id="searchInput" autocomplete="off" placeholder="Buscar productos o códigos..."></label>
+            <label class="sr-only" for="statusFilter">Estado de revisión</label>
+            <select id="statusFilter"><option value="all">Todos los estados</option><option value="pending">Sin revisar</option><option value="checked">Verificados</option><option value="empty">Sin existencias</option><option value="sold">Vendidos / agotados</option><option value="partial">Con ventas</option><option value="damaged">Colección con daño</option></select>
+          </div>
+          <nav id="categoryFilters" class="filters" aria-label="Filtrar por categoría"></nav>
+          <div id="itemList" class="items" aria-live="polite"></div>
+        </section>
+        <aside class="side" aria-label="Herramientas y resumen">
+          <section class="side-card"><div class="side-heading"><svg><use href="#i-check-circle"></use></svg><h3>Control de revisión</h3></div><div class="progress-meta"><span>Artículos verificados</span><strong id="progressLabel">0%</strong></div><div class="progress" role="progressbar" id="progressBar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Porcentaje de artículos verificados"><div class="progress-fill" id="progressFill"></div></div><p class="side-description">Marca cada registro cuando hayas comprobado su cantidad física.</p></section>
+          <section class="side-card"><div class="side-heading"><svg><use href="#i-layers"></use></svg><h3>Por categoría</h3></div><div id="categorySummary"></div><p class="side-description" id="packSummary" style="margin-top:13px"></p></section>
+          <section class="side-card warning-card" id="issuePanel">
+            <div class="side-heading"><svg><use href="#i-shield"></use></svg><h3>Productos dañados</h3></div>
+            <p class="side-description"><strong id="damagedCount">1</strong> unidad separada del stock vendible.</p>
+            <div id="issuesList"></div>
+            <button type="button" class="button button-outline" id="resolveIssue" style="margin-top:12px;width:100%;white-space:normal">Indicar que se identificó / resolvió</button>
+          </section>
+          <section class="side-card pin-card"><div class="side-heading"><svg><use href="#i-tag"></use></svg><h3>Catálogo de pines</h3></div><p class="pin-copy">Las colecciones de Snoopy se dividen en Variados (34), Casas (6) y Halloween (6). De Halloween, una unidad está rota y aún falta identificar el diseño.</p><div class="pin-stock"><strong id="pinsRemaining">20</strong><span>pines de emociones pendientes</span></div><button id="pinAdd" type="button" class="button button-soft pin-add"><svg><use href="#i-plus"></use></svg> Desglosar pin de emociones</button><p class="side-description">Los 2 paquetes de emociones contienen 20 unidades en conjunto. Esta reserva es distinta del resto de colecciones.</p></section>
+          <section class="side-card backup-card"><div class="side-heading"><svg><use href="#i-shield"></use></svg><h3>Tu copia de seguridad</h3></div><p>Esta página funciona sin conexión una vez guardada como archivo. Si la alojas en HTTPS con los archivos de este proyecto, también puede guardarse como aplicación sin conexión tras la primera carga.</p><p>Guarda una copia JSON para trasladar ventas y existencias a otro dispositivo.</p><div class="backup-actions"><button class="button button-primary" id="sideExport" type="button"><svg><use href="#i-download"></use></svg> Exportar</button><button class="button button-outline" id="sideImport" type="button"><svg><use href="#i-upload"></use></svg> Importar</button></div><input type="file" id="importFile" accept="application/json,.json" hidden><p style="margin:14px 0 0;font-size:10px">Borrar datos del sitio o usar navegación privada puede eliminar el inventario local.</p></section>
+        </aside>
+      </div>
+    </main>
+    <footer class="footnote"><span>Jolugamo Store · Inventario 4.0</span><span>Sin cuentas · Sin servidores · Datos exportables</span></footer>
+  </div>
+
+  <dialog id="editDialog" aria-labelledby="dialogTitle">
+    <form id="itemForm">
+      <div class="dialog-head"><div><h2 id="dialogTitle">Nuevo artículo</h2><p id="dialogHelp">Completa los datos. Puedes modificarlos después.</p></div><button class="icon-button" type="button" id="closeDialog" aria-label="Cerrar"><svg><use href="#i-close"></use></svg></button></div>
+      <div class="dialog-body">
+        <div class="field"><label for="fName">Nombre del producto *</label><input id="fName" name="name" required maxlength="110" placeholder="Ej. Peluche de gato"></div>
+        <div class="field-row"><div class="field"><label for="fSku">Código / marcaje *</label><input id="fSku" name="sku" required maxlength="40" placeholder="INV-013"></div><div class="field"><label for="fCategory">Categoría *</label><input id="fCategory" list="categoryOptions" name="category" required maxlength="55" placeholder="Ej. Peluches"><datalist id="categoryOptions"></datalist></div></div>
+        <div class="field" id="collectionField" hidden><label for="fCollection">Colección de pines</label><input id="fCollection" name="collection" list="pinCollectionOptions" maxlength="70" placeholder="Ej.: Snoopy · Variados"><datalist id="pinCollectionOptions"></datalist><small>Los pines se agrupan por colección. Snoopy tiene solo Variados, Casas y Halloween.</small></div>
+        <div class="field-row"><div class="field"><label for="fFormat">Presentación</label><select id="fFormat" name="format"><option value="unidad">Unidades sueltas</option><option value="paquete">Paquetes</option></select></div><div class="field"><label for="fQty" id="qtyLabel">Cantidad de unidades *</label><input id="fQty" name="quantity" type="number" required min="0" max="1000000" step="1" inputmode="numeric" value="1"></div></div>
+        <div class="field" id="packField" hidden><label for="fPack">Unidades dentro de cada paquete *</label><input id="fPack" name="unitsPerPack" type="number" min="1" max="1000000" step="1" inputmode="numeric" value="1"><small>Ejemplo: 1 paquete con 6 Pikachus = 6 unidades físicas.</small></div>
+        <div class="field" id="packsCountField"><label for="fPacksCount">Paquetes físicos que agrupan estas unidades (opcional)</label><input id="fPacksCount" name="packsCount" type="number" min="0" max="1000000" step="1" inputmode="numeric" value="0"><small>Úsalo si conoces el total de unidades y paquetes, pero no la distribución interna. Por ejemplo: 20 pines en 2 paquetes.</small></div>
+        <div class="field"><label for="fSold">Cantidad ya vendida (histórico)</label><input id="fSold" name="soldQty" type="number" min="0" max="1000000" step="1" inputmode="numeric" value="0"><small>Para unidades sueltas cuenta piezas; para paquetes cuenta paquetes completos. Usa «Vender 1» en la lista para registrar ventas rápidamente.</small></div>
+        <div class="field"><label for="fNotes">Notas (opcional)</label><textarea id="fNotes" name="notes" maxlength="500" placeholder="Color, ubicación, descripción..."></textarea></div>
+        <label class="check-label"><input type="checkbox" id="fChecked" name="verified"> Ya verifiqué físicamente este artículo</label>
+      </div>
+      <div class="dialog-foot"><button id="deleteButton" class="button button-quiet danger" type="button" hidden>Eliminar</button><div style="margin-left:auto"><button class="button button-outline" type="button" id="cancelDialog">Cancelar</button><button class="button button-primary" type="submit">Guardar artículo</button></div></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- BASE DE DATOS INICIAL ABIERTA: puedes editar este JSON o importar otro archivo. -->
+  <script id="seed-data" type="application/json">
+[
+  {
+    "id": "item-001",
+    "sku": "INV-001",
+    "name": "Máscara de la peste negra · negra",
+    "category": "Máscaras",
+    "format": "unidad",
+    "quantity": 4,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "",
+    "soldQty": 0
+  },
+  {
+    "id": "item-002",
+    "sku": "INV-002",
+    "name": "Peluche de gato",
+    "category": "Peluches",
+    "format": "unidad",
+    "quantity": 4,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "",
+    "soldQty": 0
+  },
+  {
+    "id": "item-003",
+    "sku": "INV-003",
+    "name": "Peluche de Hello Kitty Chucky",
+    "category": "Peluches",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "",
+    "soldQty": 0
+  },
+  {
+    "id": "item-004",
+    "sku": "INV-004",
+    "name": "Pokébola",
+    "category": "Coleccionables",
+    "format": "unidad",
+    "quantity": 6,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "",
+    "soldQty": 0
+  },
+  {
+    "id": "item-005",
+    "sku": "INV-005",
+    "name": "Pikachu · paquete 1",
+    "category": "Figuras",
+    "format": "paquete",
+    "quantity": 1,
+    "unitsPerPack": 6,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Primer paquete: 6 figuras de Pikachu.",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "",
+    "soldQty": 0
+  },
+  {
+    "id": "item-006",
+    "sku": "INV-006",
+    "name": "Pikachu · paquete 2",
+    "category": "Figuras",
+    "format": "paquete",
+    "quantity": 1,
+    "unitsPerPack": 6,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Segundo paquete: 6 figuras de Pikachu.",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "",
+    "soldQty": 0
+  },
+  {
+    "id": "item-007",
+    "sku": "INV-007",
+    "name": "Spider-Man · paquete",
+    "category": "Figuras",
+    "format": "paquete",
+    "quantity": 1,
+    "unitsPerPack": 6,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Contiene 6 figuras de Spider-Man.",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "",
+    "soldQty": 0
+  },
+  {
+    "id": "item-008",
+    "sku": "INV-008",
+    "name": "Peluche de araña",
+    "category": "Peluches",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "",
+    "soldQty": 0
+  },
+  {
+    "id": "item-009",
+    "sku": "PIN-EMO-000",
+    "name": "Pines de emociones · modelos pendientes",
+    "category": "Pines",
+    "format": "unidad",
+    "quantity": 20,
+    "unitsPerPack": 1,
+    "packsCount": 2,
+    "verified": false,
+    "notes": "Surtido en 2 paquetes: 20 pines en conjunto. Distribución por paquete y diseños pendientes de identificar. Al desglosar diseños, se descuentan de este registro.",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "Emociones",
+    "soldQty": 0
+  },
+  {
+    "id": "item-010",
+    "sku": "LLA-KRA-001",
+    "name": "Llavero de Kratos",
+    "category": "Llaveros",
+    "format": "unidad",
+    "quantity": 7,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "",
+    "soldQty": 0
+  },
+  {
+    "id": "item-011",
+    "sku": "LLA-ESP-001",
+    "name": "Llavero de espada",
+    "category": "Llaveros",
+    "format": "unidad",
+    "quantity": 12,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "",
+    "soldQty": 0
+  },
+  {
+    "id": "item-012",
+    "sku": "MAS-BLA-001",
+    "name": "Máscara de la peste negra · blanca",
+    "category": "Máscaras",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:02:17.550Z",
+    "collection": "",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0001",
+    "sku": "PIN-SNO-VAR-001",
+    "name": "Snoopy circular «Soporte animal»",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0002",
+    "sku": "PIN-SNO-VAR-002",
+    "name": "Snoopy leyendo",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 3,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0003",
+    "sku": "PIN-SNO-VAR-003",
+    "name": "Snoopy sentado en una banca comiendo helado",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0004",
+    "sku": "PIN-SNO-VAR-004",
+    "name": "Snoopy vestido de astronauta",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 2,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0005",
+    "sku": "PIN-SNO-VAR-005",
+    "name": "Snoopy tocando el saxofón",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0006",
+    "sku": "PIN-SNO-VAR-006",
+    "name": "Snoopy con cámara de fotos",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0007",
+    "sku": "PIN-SNO-VAR-007",
+    "name": "Snoopy abrazando a Woodstock",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 2,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0008",
+    "sku": "PIN-SNO-VAR-008",
+    "name": "Snoopy parado firme",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 4,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0009",
+    "sku": "PIN-SNO-VAR-009",
+    "name": "Snoopy disfrazado de fantasma",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0010",
+    "sku": "PIN-SNO-VAR-010",
+    "name": "Snoopy con camiseta rosada y lentes de sol oscuros",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0011",
+    "sku": "PIN-SNO-VAR-011",
+    "name": "Snoopy con una cerveza",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0012",
+    "sku": "PIN-SNO-VAR-012",
+    "name": "Snoopy vestido de aviador",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0013",
+    "sku": "PIN-SNO-VAR-013",
+    "name": "Snoopy pintando con Woodstock",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0014",
+    "sku": "PIN-SNO-VAR-014",
+    "name": "Snoopy abrigado",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 3,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Incluye 2 unidades de Snoopy variados y 1 de la anterior sección «simple».",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0015",
+    "sku": "PIN-SNO-VAR-015",
+    "name": "Snoopy jugando fútbol",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0016",
+    "sku": "PIN-SNO-VAR-016",
+    "name": "Snoopy dentro de una hamburguesa",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0017",
+    "sku": "PIN-SNO-VAR-017",
+    "name": "Snoopy sobre una patineta",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0018",
+    "sku": "PIN-SNO-VAR-018",
+    "name": "Snoopy con un cono de helado",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0019",
+    "sku": "PIN-SNO-VAR-019",
+    "name": "Snoopy sobre una almohada escuchando música",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0020",
+    "sku": "PIN-SNO-VAR-020",
+    "name": "Snoopy sobre una boya flotadora",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0021",
+    "sku": "PIN-SNO-VAR-021",
+    "name": "Snoopy jugando tenis",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0022",
+    "sku": "PIN-SNO-VAR-022",
+    "name": "Snoopy conduciendo una pizza",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0023",
+    "sku": "PIN-SNO-VAR-023",
+    "name": "Snoopy jugando básquet",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0024",
+    "sku": "PIN-SNO-VAR-024",
+    "name": "Snoopy volando un avión",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0025",
+    "sku": "PIN-SNO-CAS-001",
+    "name": "Snoopy con paraguas sobre su casa",
+    "category": "Pines",
+    "collection": "Snoopy · Casas",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0026",
+    "sku": "PIN-SNO-CAS-002",
+    "name": "Snoopy sobre su casa en Navidad",
+    "category": "Pines",
+    "collection": "Snoopy · Casas",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0027",
+    "sku": "PIN-SNO-CAS-003",
+    "name": "Snoopy abriendo un regalo de Navidad sobre su casa",
+    "category": "Pines",
+    "collection": "Snoopy · Casas",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0028",
+    "sku": "PIN-SNO-CAS-004",
+    "name": "Snoopy dormido sobre su casa",
+    "category": "Pines",
+    "collection": "Snoopy · Casas",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0029",
+    "sku": "PIN-SNO-CAS-005",
+    "name": "Snoopy comiendo una manzana en otoño sobre su casa",
+    "category": "Pines",
+    "collection": "Snoopy · Casas",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0030",
+    "sku": "PIN-SNO-CAS-006",
+    "name": "Snoopy dormido sobre su casa sin adornos",
+    "category": "Pines",
+    "collection": "Snoopy · Casas",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0031",
+    "sku": "PIN-SNO-HAL-001",
+    "name": "Snoopy con mochila de calabaza",
+    "category": "Pines",
+    "collection": "Snoopy · Halloween",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0032",
+    "sku": "PIN-SNO-HAL-002",
+    "name": "Snoopy con un esqueleto",
+    "category": "Pines",
+    "collection": "Snoopy · Halloween",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0033",
+    "sku": "PIN-SNO-HAL-003",
+    "name": "Snoopy abrazando una calabaza y un globo",
+    "category": "Pines",
+    "collection": "Snoopy · Halloween",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0034",
+    "sku": "PIN-SNO-HAL-004",
+    "name": "Snoopy visitando una tumba",
+    "category": "Pines",
+    "collection": "Snoopy · Halloween",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0035",
+    "sku": "PIN-SNO-HAL-005",
+    "name": "Snoopy vestido de diablito con calabaza y fantasma",
+    "category": "Pines",
+    "collection": "Snoopy · Halloween",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0036",
+    "sku": "PIN-SNO-HAL-006",
+    "name": "Snoopy comiendo un dulce",
+    "category": "Pines",
+    "collection": "Snoopy · Halloween",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0037",
+    "sku": "PIN-ADV-001",
+    "name": "Jake y Finn sobre un arcoíris",
+    "category": "Pines",
+    "collection": "Hora de Aventura",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0038",
+    "sku": "PIN-ADV-002",
+    "name": "Jake y Finn como un billete",
+    "category": "Pines",
+    "collection": "Hora de Aventura",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0039",
+    "sku": "PIN-ADV-003",
+    "name": "Jake, Finn, la princesa y Arcoíris",
+    "category": "Pines",
+    "collection": "Hora de Aventura",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0040",
+    "sku": "PIN-ADV-004",
+    "name": "Jake y Finn yéndose de aventura",
+    "category": "Pines",
+    "collection": "Hora de Aventura",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0041",
+    "sku": "PIN-ADV-005",
+    "name": "Jake y Finn chocando los puños",
+    "category": "Pines",
+    "collection": "Hora de Aventura",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0042",
+    "sku": "PIN-CSM-001",
+    "name": "Chainsaw Man · Power",
+    "category": "Pines",
+    "collection": "Chainsaw Man",
+    "format": "unidad",
+    "quantity": 2,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0043",
+    "sku": "PIN-CSM-002",
+    "name": "Chainsaw Man · Reze",
+    "category": "Pines",
+    "collection": "Chainsaw Man",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0044",
+    "sku": "PIN-CSM-003",
+    "name": "Chainsaw Man · Makima",
+    "category": "Pines",
+    "collection": "Chainsaw Man",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0045",
+    "sku": "PIN-CSM-004",
+    "name": "Chainsaw Man · Aki",
+    "category": "Pines",
+    "collection": "Chainsaw Man",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0046",
+    "sku": "PIN-AST-001",
+    "name": "Astronauta relajado sobre la Luna",
+    "category": "Pines",
+    "collection": "Astronautas",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0047",
+    "sku": "PIN-AST-002",
+    "name": "Astronauta reloj sobre la Luna",
+    "category": "Pines",
+    "collection": "Astronautas",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Descripción pendiente de confirmar: «astronauta reloj sobre la Luna».",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0048",
+    "sku": "PIN-AST-003",
+    "name": "Astronauta tomando una estrella",
+    "category": "Pines",
+    "collection": "Astronautas",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0049",
+    "sku": "PIN-AST-004",
+    "name": "Astronauta tomando café sobre Saturno",
+    "category": "Pines",
+    "collection": "Astronautas",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0050",
+    "sku": "PIN-AST-005",
+    "name": "Astronauta sobre una ballena",
+    "category": "Pines",
+    "collection": "Astronautas",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0051",
+    "sku": "PIN-MIK-001",
+    "name": "Pines de Miku · modelos por identificar",
+    "category": "Pines",
+    "collection": "Hatsune Miku",
+    "format": "unidad",
+    "quantity": 7,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Diseños individuales aún no especificados; desglose pendiente.",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0052",
+    "sku": "PIN-COL-001",
+    "name": "Pines de Cult of the Lamb · modelos por identificar",
+    "category": "Pines",
+    "collection": "Cult of the Lamb",
+    "format": "unidad",
+    "quantity": 6,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Diseños individuales aún no especificados; desglose pendiente.",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0053",
+    "sku": "PIN-EVA-001",
+    "name": "Pines de Evangelion · modelos por identificar",
+    "category": "Pines",
+    "collection": "Evangelion",
+    "format": "unidad",
+    "quantity": 4,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Diseños individuales aún no especificados; desglose pendiente.",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0054",
+    "sku": "PIN-GAT-001",
+    "name": "Pines de gatos y obras de arte · modelos por identificar",
+    "category": "Pines",
+    "collection": "Gatos · Obras de arte",
+    "format": "unidad",
+    "quantity": 4,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Diseños individuales aún no especificados; desglose pendiente.",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0055",
+    "sku": "PIN-VAR-001",
+    "name": "Pin de alien",
+    "category": "Pines",
+    "collection": "Variados",
+    "format": "unidad",
+    "quantity": 2,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0056",
+    "sku": "PIN-VAR-002",
+    "name": "Pin de lobo",
+    "category": "Pines",
+    "collection": "Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0057",
+    "sku": "PIN-DIG-001",
+    "name": "Pines de Digimon · modelos por identificar",
+    "category": "Pines",
+    "collection": "Digimon",
+    "format": "unidad",
+    "quantity": 8,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Diseños individuales aún no especificados; desglose pendiente.",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0058",
+    "sku": "PIN-BTM-001",
+    "name": "Pines de bubble tea de muerte · modelos por identificar",
+    "category": "Pines",
+    "collection": "Bubble tea de muerte",
+    "format": "unidad",
+    "quantity": 7,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Diseños individuales aún no especificados; desglose pendiente.",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0059",
+    "sku": "PIN-STI-001",
+    "name": "Pines de Stitch · modelos por identificar",
+    "category": "Pines",
+    "collection": "Stitch",
+    "format": "unidad",
+    "quantity": 16,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Diseños individuales aún no especificados; desglose pendiente.",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0060",
+    "sku": "PIN-ONE-001",
+    "name": "Pines de One Piece · modelos por identificar",
+    "category": "Pines",
+    "collection": "One Piece",
+    "format": "unidad",
+    "quantity": 7,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Diseños individuales aún no especificados; desglose pendiente.",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0061",
+    "sku": "PIN-SPM-001",
+    "name": "Spider-Man con Deadpool",
+    "category": "Pines",
+    "collection": "Spider-Man",
+    "format": "unidad",
+    "quantity": 5,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Registrados como 4 pines con Deadpool y 1 pin adicional con Deadpool, conforme al dictado.",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0062",
+    "sku": "PIN-SPM-002",
+    "name": "Spider-Man con Wolverine",
+    "category": "Pines",
+    "collection": "Spider-Man",
+    "format": "unidad",
+    "quantity": 1,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v3-0063",
+    "sku": "PIN-SPM-003",
+    "name": "Pines de Spider-Man · otros modelos por identificar",
+    "category": "Pines",
+    "collection": "Spider-Man",
+    "format": "unidad",
+    "quantity": 15,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "El total de esta colección es 21. Faltan descripciones individuales de 15 pines.",
+    "updatedAt": "2026-10-29T05:35:00.000Z",
+    "soldQty": 0
+  },
+  {
+    "id": "pin-v4-0001",
+    "sku": "PIN-SNO-VAR-025",
+    "name": "Snoopy variado · diseño pendiente de identificar",
+    "category": "Pines",
+    "collection": "Snoopy · Variados",
+    "format": "unidad",
+    "quantity": 1,
+    "soldQty": 0,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Unidad adicional confirmada al fijar el total de Snoopy normales en 34; diseño aún no especificado.",
+    "updatedAt": "2026-10-29T11:00:00.000Z"
+  },
+  {
+    "id": "pin-v4-0002",
+    "sku": "PIN-HON-001",
+    "name": "Pines de hongos · diseños por identificar",
+    "category": "Pines",
+    "collection": "Hongos",
+    "format": "unidad",
+    "quantity": 6,
+    "soldQty": 0,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Se han contabilizado 6; diseños individuales pendientes.",
+    "updatedAt": "2026-10-29T11:00:00.000Z"
+  },
+  {
+    "id": "pin-v4-0003",
+    "sku": "PIN-ESQ-001",
+    "name": "Pines de esqueletos de animales · diseños por identificar",
+    "category": "Pines",
+    "collection": "Esqueletos de animales",
+    "format": "unidad",
+    "quantity": 5,
+    "soldQty": 0,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Se han contabilizado 5; diseños individuales pendientes.",
+    "updatedAt": "2026-10-29T11:00:00.000Z"
+  },
+  {
+    "id": "pin-v4-0004",
+    "sku": "PIN-HKI-001",
+    "name": "Pines de Hello Kitty · diseños por identificar",
+    "category": "Pines",
+    "collection": "Hello Kitty",
+    "format": "unidad",
+    "quantity": 7,
+    "soldQty": 0,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Pines estándar, diferentes de la colección dorada.",
+    "updatedAt": "2026-10-29T11:00:00.000Z"
+  },
+  {
+    "id": "pin-v4-0005",
+    "sku": "PIN-HKD-001",
+    "name": "Pines de Hello Kitty dorada · diseños por identificar",
+    "category": "Pines",
+    "collection": "Hello Kitty · Doradas",
+    "format": "unidad",
+    "quantity": 7,
+    "soldQty": 0,
+    "unitsPerPack": 1,
+    "packsCount": 0,
+    "verified": false,
+    "notes": "Colección dorada diferenciada de la estándar.",
+    "updatedAt": "2026-10-29T11:00:00.000Z"
+  }
+]
+  </script>
+
+  <script>
+    (() => {
+      'use strict';
+      const KEY = 'inventario-local-abierto-v1'; // Se conserva para migrar datos de la V1 sin perderlos.
+      const CATALOG_REVISION = 4;
+      const CATEGORY_ORDER = ['Pines', 'Peluches', 'Llaveros', 'Máscaras', 'Figuras', 'Coleccionables'];
+      const PIN_COLLECTION_ORDER = ['Snoopy · Variados','Snoopy · Casas','Snoopy · Halloween','Hora de Aventura','Chainsaw Man','Astronautas','Hatsune Miku','Cult of the Lamb','Evangelion','Gatos · Obras de arte','Variados','Digimon','Bubble tea de muerte','Stitch','One Piece','Spider-Man','Hongos','Esqueletos de animales','Hello Kitty','Hello Kitty · Doradas','Emociones'];
+      const DB_NAME = 'InventarioPersonalAbierto';
+      const DB_STORE = 'documentos';
+      const $ = (selector) => document.querySelector(selector);
+      const state = { items: [], issues: [], search: '', category: 'Todas', status: 'all', editingId: null, pinDraftMode: false, openCollections: new Set() };
+      const seed = JSON.parse($('#seed-data').textContent);
+      const icon = (name) => `<svg aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+      const html = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const number = (n) => new Intl.NumberFormat('es-EC').format(n);
+      const physical = (item) => item.quantity * (item.format === 'paquete' ? item.unitsPerPack : 1);
+      const uid = () => (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') ? crypto.randomUUID() : `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const initialTime = new Date().toISOString();
+      const defaultIssues = [{id:'snoopy-halloween-damaged-1',category:'Pines',collection:'Snoopy · Halloween',quantity:1,reason:'Una unidad rota; falta identificar el diseño.',resolved:false}];
+      function cleanIssues(raw) {
+        if (!Array.isArray(raw)) return defaultIssues.map(x=>({...x}));
+        return raw.filter(x=>x && typeof x==='object').slice(0,40).map(x=>({
+          id:String(x.id||''), category:String(x.category||'Pines'),collection:String(x.collection||''),
+          quantity:Math.max(0,Math.min(1000000,Math.floor(Number(x.quantity)||0))),
+          reason:String(x.reason||'').slice(0,200), resolved:Boolean(x.resolved)
+        }));
+      }
+      const activeDamage = (collection=null) => state.issues.reduce((total,issue) => total + (!issue.resolved && (collection===null || issue.collection===collection) ? issue.quantity : 0),0);
+      const sellable = (item) => item.quantity;
+      const soldPhysical = (item) => item.soldQty*(item.format==='paquete'?item.unitsPerPack:1);
+      const stockByCollection = (col) => state.items.filter(i=>i.category==='Pines' && i.collection===col).reduce((sum,x)=>sum+physical(x),0);
+
+      let toastTimer;
+
+      // IndexedDB almacena el documento JSON completo en el navegador.
+      // Si no está disponible (algunos contextos file:// o modos privados), usa localStorage.
+      const storage = {
+        mode: 'memory', db: null, memory: null,
+        async init() {
+          if ('indexedDB' in window) {
+            try {
+              this.db = await new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME, 1);
+                req.onupgradeneeded = () => {
+                  if (!req.result.objectStoreNames.contains(DB_STORE)) req.result.createObjectStore(DB_STORE);
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+                req.onblocked = () => reject(new Error('Base de datos bloqueada'));
+              });
+              this.mode = 'indexeddb'; return;
+            } catch (error) { console.warn('IndexedDB no disponible:', error); }
+          }
+          try {
+            localStorage.setItem('__inventario_test__', 'ok');
+            localStorage.removeItem('__inventario_test__');
+            this.mode = 'localstorage';
+          } catch (error) { this.mode = 'memory'; }
+        },
+        async read() {
+          if (this.mode === 'indexeddb') {
+            return new Promise((resolve, reject) => {
+              const req = this.db.transaction(DB_STORE, 'readonly').objectStore(DB_STORE).get(KEY);
+              req.onsuccess = () => {
+                if (req.result !== undefined && req.result !== null) {resolve(req.result); return;}
+                // Rescate de datos guardados por versiones anteriores con localStorage.
+                try {const legacy=localStorage.getItem(KEY);resolve(legacy===null?null:JSON.parse(legacy));}
+                catch(e) {resolve(null);}
+              };
+              req.onerror = () => reject(req.error);
+            });
+          }
+          if (this.mode === 'localstorage') {
+            const raw = localStorage.getItem(KEY);
+            return raw === null ? null : JSON.parse(raw);
+          }
+          return this.memory;
+        },
+        async write(data) {
+          if (this.mode === 'indexeddb') {
+            return new Promise((resolve, reject) => {
+              const tx = this.db.transaction(DB_STORE, 'readwrite');
+              tx.objectStore(DB_STORE).put(data, KEY);
+              tx.oncomplete = () => resolve();
+              tx.onerror = () => reject(tx.error);
+              tx.onabort = () => reject(tx.error);
+            });
+          }
+          if (this.mode === 'localstorage') { localStorage.setItem(KEY, JSON.stringify(data)); return; }
+          this.memory = data;
+        }
+      };
+      function cleanItem(raw, i) {
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error(`Registro ${i + 1} inválido.`);
+        const name = String(raw.name ?? '').trim();
+        const category = String(raw.category ?? 'Otros').trim() || 'Otros';
+        const sku = String(raw.sku ?? `INV-${String(i+1).padStart(3,'0')}`).trim();
+        const format = raw.format === 'paquete' ? 'paquete' : 'unidad';
+        const quantity = Number(raw.quantity);
+        const unitsPerPack = format === 'paquete' ? Number(raw.unitsPerPack) : 1;
+        const packsCount = format === 'unidad' ? Number(raw.packsCount ?? 0) : 0;
+        const soldQty = Number(raw.soldQty ?? 0);
+        const collection = category === 'Pines' ? String(raw.collection ?? '').trim() : '';
+        if (collection.length > 70) throw new Error(`Colección demasiado larga en «${name}».`);
+        if (!name || name.length > 110 || category.length > 55 || !sku || sku.length > 40) throw new Error(`Revisa el nombre, categoría o código del registro ${i+1}.`);
+        if (!Number.isSafeInteger(quantity) || quantity < 0 || quantity > 1000000 || !Number.isSafeInteger(unitsPerPack) || unitsPerPack < 1 || unitsPerPack > 1000000 || !Number.isSafeInteger(packsCount) || packsCount < 0 || packsCount > 1000000 || !Number.isSafeInteger(soldQty) || soldQty < 0 || soldQty > 1000000) throw new Error(`Cantidad inválida en «${name}».`);
+        return { id: String(raw.id || uid()), sku, name, category, collection, format, quantity, soldQty, unitsPerPack, packsCount, verified: Boolean(raw.verified), notes: String(raw.notes ?? '').slice(0,500), updatedAt: String(raw.updatedAt || initialTime) };
+      }
+      function validateItems(raw) {
+        if (!Array.isArray(raw) || raw.length > 20000) throw new Error('El JSON debe contener una lista de hasta 20.000 artículos.');
+        const result = raw.map(cleanItem);
+        const ids = new Set();
+        const skus = new Set();
+        for (const item of result) {
+          if (ids.has(item.id)) item.id = uid();
+          if (skus.has(item.sku.toLowerCase())) throw new Error(`Código duplicado: ${item.sku}`);
+          ids.add(item.id); skus.add(item.sku.toLowerCase());
+        }
+        return result;
+      }
+      function sortCategories(categories) {
+        return [...categories].sort((a,b) => {
+          const ai = CATEGORY_ORDER.indexOf(a), bi = CATEGORY_ORDER.indexOf(b);
+          if (ai !== -1 && bi !== -1) return ai-bi;
+          if (ai !== -1) return -1;
+          if (bi !== -1) return 1;
+          return a.localeCompare(b,'es');
+        });
+      }
+      function migrateLegacy(document) {
+        const rows = Array.isArray(document) ? document : document?.items;
+        const saved = validateItems(rows);
+        if (document && !Array.isArray(document) && Number(document.catalogRevision) >= CATALOG_REVISION) return { items:saved, issues:cleanIssues(document.issues), migrated:false };
+        const next = saved.map(x => ({...x}));
+        const savedRevision = Number(document?.catalogRevision || 1);
+        const originalMask = next.find(x => x.id === 'item-001');
+        if (originalMask && originalMask.name === 'Máscara de feste negra') {
+          originalMask.name = 'Máscara de la peste negra · negra';
+          originalMask.category = 'Máscaras';
+          if (originalMask.format === 'unidad' && originalMask.quantity === 5) originalMask.quantity = 4;
+          originalMask.notes = originalMask.notes === 'Nombre provisional, editable.' ? '' : originalMask.notes;
+        }
+        for (const item of next) {
+          if (['item-005','item-006','item-007'].includes(item.id) && item.category === 'Paquetes') {
+            item.category = 'Figuras';
+            if (item.id === 'item-005' && item.name === 'Pikachus · paquete 1') item.name = 'Pikachu · paquete 1';
+            if (item.id === 'item-006' && item.name === 'Pikachus · paquete 2') item.name = 'Pikachu · paquete 2';
+            if (item.id === 'item-007' && item.name === 'Spiderman · paquete') item.name = 'Spider-Man · paquete';
+          }
+          // El resto de los artículos existentes, sus cantidades y verificaciones se conservan.
+        }
+        const usedIds = new Set(next.map(i => i.id));
+        const usedSkus = new Set(next.map(i => i.sku.toLowerCase()));
+        for (const entry of seed.filter(i => (savedRevision < 2 && ['item-009','item-010','item-011','item-012'].includes(i.id)) || (savedRevision < 3 && i.id.startsWith('pin-v3-')) || i.id.startsWith('pin-v4-'))) {
+          if (usedSkus.has(entry.sku.toLowerCase())) continue;
+          const added = {...entry, id:usedIds.has(entry.id) ? uid() : entry.id};
+          next.push(added); usedIds.add(added.id); usedSkus.add(added.sku.toLowerCase());
+        }
+        return { items:validateItems(next), issues:cleanIssues(document?.issues), migrated:true };
+      }
+      async function persist(items = state.items) {
+        await storage.write({ version: 4, catalogRevision: CATALOG_REVISION, updatedAt: new Date().toISOString(), items, issues:state.issues });
+      }
+      async function commit(next, message) {
+        try {
+          await persist(next);
+          state.items = next;
+          render();
+          if (message) toast(message);
+          return true;
+        } catch (error) {
+          console.error(error); toast('No se pudo guardar. Exporta una copia si es posible.'); return false;
+        }
+      }
+      function toast(message) {
+        const el = $('#toast'); el.textContent = message; el.classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+      }
+      function typeIcon(category) {
+        const c = category.toLowerCase();
+        if (c.includes('pin')) return { ico:'tag', style:'pines' };
+        if (c.includes('peluch')) return { ico:'heart', style:'peluches' };
+        if (c.includes('llaver')) return { ico:'tag', style:'llaveros' };
+        if (c.includes('máscar') || c.includes('mascar')) return { ico:'shield', style:'mascaras' };
+        if (c.includes('figura')) return { ico:'spark', style:'figuras' };
+        if (c.includes('accesor')) return { ico:'tag', style:'accesorios' };
+        if (c.includes('coleccion')) return { ico:'spark', style:'coleccionables' };
+        return { ico:'box', style:'' };
+      }
+      function pinGroups(items) {
+        const collections = new Map();
+        for (const item of items) {
+          const col = item.collection || 'Sin colección';
+          if (!collections.has(col)) collections.set(col, []);
+          collections.get(col).push(item);
+        }
+        const keys = [...collections.keys()].sort((a,b) => {
+          const ai=PIN_COLLECTION_ORDER.indexOf(a), bi=PIN_COLLECTION_ORDER.indexOf(b);
+          if (ai>=0 && bi>=0) return ai-bi;
+          if (ai>=0) return -1;
+          if (bi>=0) return 1;
+          return a.localeCompare(b,'es');
+        });
+        return keys.map(col=>{
+          const rows=collections.get(col);
+          const total=rows.reduce((n,x)=>n+physical(x),0);
+          const sold=rows.reduce((n,x)=>n+soldPhysical(x),0);
+          const damage=activeDamage(col);
+          const expanded=Boolean(state.search) || state.openCollections.has(col);
+          return `<details class="pin-collection" ${expanded?'open':''}><summary data-collection="${html(col)}"><span class="pin-collection-name">${icon('layers')} ${html(col)}</span><span class="pin-collection-count">${number(total)} en stock${sold?` · ${number(sold)} vend.`:''}${damage?` · ${damage} roto`: ''}</span>${icon('chevron-down')}</summary><div class="items pin-collection-items">${rows.map(itemCard).join('')}</div></details>`;
+        }).join('');
+      }
+      function categoryGroups(items) {
+        const groups = new Map();
+        for (const item of items) {
+          if (!groups.has(item.category)) groups.set(item.category, []);
+          groups.get(item.category).push(item);
+        }
+        return sortCategories(groups.keys()).map((category) => {
+          const group=groups.get(category);
+          const total=group.reduce((sum,item)=>sum+physical(item),0);
+          const sold=group.reduce((sum,item)=>sum+soldPhysical(item),0);
+          const colors={'Pines':'#ab72cf','Peluches':'#db958a','Llaveros':'#42a391','Máscaras':'#8184a4','Figuras':'#dfae5d','Coleccionables':'#7b9ad8'};
+          return `<section class="category-group" aria-label="Categoría ${html(category)}"><div class="category-group-head"><h3><span class="group-mark" style="background:${colors[category]||'#8c81ed'}"></span>${html(category)}</h3><span class="group-count">${number(total)} en stock${sold ? ` · ${number(sold)} vendidos` : ''}</span></div>${category==='Pines' ? `<div class="pin-collections">${pinGroups(group)}</div>` : `<div class="items">${group.map(itemCard).join('')}</div>`}</section>`;
+        }).join('');
+      }
+      function render() {
+        const all = state.items;
+        const count = all.reduce((s,item)=>s+physical(item),0);
+        const sold = all.reduce((s,item)=>s+soldPhysical(item),0);
+        const damaged = Math.min(activeDamage(),count);
+        const packs = all.reduce((s,item)=>s + (item.format==='paquete'?item.quantity:item.packsCount),0);
+        const verified = all.filter(item=>item.verified).length;
+        $('#totalUnits').textContent=number(count);
+        $('#totalAvailable').textContent=number(Math.max(0,count-damaged));
+        $('#totalSold').textContent=number(sold);
+        $('#totalChecked').textContent=`${verified}/${all.length}`;
+        const pct=all.length ? Math.round(verified/all.length*100):0;
+        $('#progressLabel').textContent=`${pct}%`;
+        $('#progressFill').style.width=`${pct}%`;
+        $('#progressBar').setAttribute('aria-valuenow',String(pct));
+        $('#packSummary').textContent=`${number(packs)} paquetes/lotes registrados (los lotes pueden incluir unidades ya vendidas).`;
+        $('#damagedCount').textContent=number(damaged);
+        const unresolved=state.issues.filter(x=>!x.resolved && x.quantity);
+        $('#issuesList').innerHTML=unresolved.length?unresolved.map(x=>`<div class="issue-line">${html(x.collection)}: ${number(x.quantity)} roto. ${html(x.reason)}</div>`).join(''):'<div class="issue-line issue-ok">No hay daños pendientes.</div>';
+        $('#resolveIssue').textContent=unresolved.length?'Marcar daño identificado / resuelto':'Restablecer aviso de daño';
+        const counts=new Map();
+        for(const item of all) counts.set(item.category,(counts.get(item.category)||0)+physical(item));
+        const categories=sortCategories(counts.keys());
+        if(state.category!=='Todas'&&!counts.has(state.category)) state.category='Todas';
+        $('#categoryFilters').innerHTML=['Todas',...categories].map(c=>`<button class="filter" type="button" data-category="${html(c)}" aria-pressed="${String(c===state.category)}">${html(c)}</button>`).join('');
+        $('#categorySummary').innerHTML=categories.length?categories.map((cat,i)=>`<div class="category-row"><span class="category-left"><span class="category-dot" style="background:${['#8c81ed','#e2a05c','#65bfae','#799edc','#d088a6'][i%5]}"></span><span title="${html(cat)}">${html(cat)}</span></span><strong>${number(counts.get(cat))}</strong></div>`).join(''):'<p class="side-description">Sin categorías todavía.</p>';
+        $('#categoryOptions').innerHTML=sortCategories(new Set([...CATEGORY_ORDER,...categories])).map(c=>`<option value="${html(c)}"></option>`).join('');
+        $('#pinCollectionOptions').innerHTML=[...new Set([...PIN_COLLECTION_ORDER,...all.filter(i=>i.category==='Pines').map(i=>i.collection).filter(Boolean)])].map(c=>`<option value="${html(c)}"></option>`).join('');
+        const term=state.search.toLocaleLowerCase('es');
+        const shown=all.filter(item=>{
+          const matchesText=[item.name,item.sku,item.category,item.collection,item.notes].some(x=>x.toLocaleLowerCase('es').includes(term));
+          const matchesCat=state.category==='Todas'||item.category===state.category;
+          const matchesStatus=state.status==='all'||(state.status==='checked'&&item.verified)||(state.status==='pending'&&!item.verified)||(state.status==='empty'&&item.quantity===0)||(state.status==='sold'&&item.soldQty>0 && item.quantity===0)||(state.status==='partial'&&item.soldQty>0)||(state.status==='damaged'&&activeDamage(item.collection)>0);
+          return matchesText&&matchesCat&&matchesStatus;
+        });
+        const pending=all.find(i=>i.id==='item-009');
+        $('#pinsRemaining').textContent=number(pending?.quantity??0);
+        $('#pinAdd').disabled=!pending||pending.quantity<1;
+        $('#shownCount').textContent=`${number(shown.length)} ${shown.length===1?'registro':'registros'}`;
+        $('#itemList').innerHTML=shown.length?categoryGroups(shown):`<div class="empty"><div class="empty-icon">${icon('search')}</div><h3>No hay artículos para mostrar</h3><p>Prueba otra búsqueda o categoría, o agrega un producto nuevo.</p></div>`;
+      }
+      function itemCard(item) {
+        const t=typeIcon(item.category);
+        const pack=item.format==='paquete';
+        const out=item.quantity===0&&item.soldQty>0;
+        const stockLabel=pack?(item.quantity===1?'paquete':'paquetes'):(item.quantity===1?'unidad':'unidades');
+        const stateTag=out?'<span class="pill pill-sold">Vendido · agotado</span>':item.quantity===0?'<span class="pill pill-empty">Sin existencias</span>':item.verified?'<span class="pill pill-good">Revisado</span>':'<span class="pill pill-pending">Por revisar</span>';
+        const packDetail=pack?`<span class="bullet">•</span><span>${number(item.unitsPerPack)} por paquete</span><span class="bullet">•</span><span>${number(physical(item))} piezas en stock</span>`:item.packsCount>0?`<span class="bullet">•</span><span>${number(item.packsCount)} paquetes</span>`:'';
+        const partial=item.soldQty>0&&!out;
+        const canSell=item.quantity>0 && !(item.category==='Pines'&&item.collection==='Snoopy · Halloween'&&activeDamage('Snoopy · Halloween')>=stockByCollection('Snoopy · Halloween'));
+        const issue=activeDamage(item.collection)>0;
+        return `<article class="item ${out?'sold-out':''} ${partial?'sale-partial':''}" data-id="${html(item.id)}">
+          <div class="item-visual ${t.style}">${icon(t.ico)}</div>
+          <div class="item-main"><div class="item-title-row"><h3>${html(item.name)}</h3>${stateTag}${partial?'<span class="pill pill-partial">Venta parcial</span>':''}</div><div class="item-meta"><span>${html(item.sku)}</span><span class="bullet">•</span><span>${html(item.category)}</span>${item.collection?`<span class="bullet">•</span><span>${html(item.collection)}</span>`:''}${packDetail}</div>
+            ${item.notes?`<p class="item-note">${html(item.notes)}</p>`:''}
+            ${item.soldQty?`<p class="sold-subtitle">${icon('check-circle')} Vendidos: ${number(item.soldQty)} ${pack?'paquetes':'unidades'}</p>`:''}
+            ${issue?'<p class="hint-inline">Atención: esta colección tiene 1 pieza rota por identificar.</p>':''}
+            <div class="sale-strip"><button class="sale-button" type="button" data-act="sell" ${canSell?'':'disabled'}>✓ Vender 1</button><button class="sale-button secondary" type="button" data-act="unsell" ${item.soldQty>0?'':'disabled'}>↶ Deshacer venta</button><button class="sale-button all" type="button" data-act="sellall" ${canSell && !issue?'':'disabled'}>Tachar todo vendido</button></div>
+          </div>
+          <div class="item-actions">
+            <div class="quantity-block"><strong>${number(item.quantity)}</strong><small>${stockLabel} en stock</small></div>
+            <div class="stepper"><button type="button" data-act="minus" aria-label="Restar ${pack?'un paquete':'una unidad'} a ${html(item.name)}" ${item.quantity===0?'disabled':''}>${icon('minus')}</button><span></span><button type="button" data-act="plus" aria-label="Sumar ${pack?'un paquete':'una unidad'} a ${html(item.name)}" ${item.quantity>=1000000?'disabled':''}>${icon('plus')}</button></div>
+            <div class="item-more"><button type="button" class="icon-button ${item.verified?'checked':''}" data-act="toggle" title="${item.verified?'Quitar revisión':'Marcar como revisado'}" aria-label="${item.verified?'Quitar revisión de':'Revisar'} ${html(item.name)}" aria-pressed="${String(item.verified)}">${icon('check-circle')}</button><button type="button" class="icon-button" data-act="edit" aria-label="Editar ${html(item.name)}">${icon('edit')}</button></div>
+          </div></article>`;
+      }
+      const dialog = $('#editDialog');
+      const form = $('#itemForm');
+      function nextSku(prefix = 'INV') {
+        let n = 1; const used = new Set(state.items.map(i=>i.sku.toUpperCase()));
+        while(used.has(`${prefix}-${String(n).padStart(3,'0')}`)) n++;
+        return `${prefix}-${String(n).padStart(3,'0')}`;
+      }
+      function syncPackField() {
+        const isPack = $('#fFormat').value === 'paquete';
+        $('#packField').hidden = !isPack;
+        $('#packsCountField').hidden = isPack;
+        $('#fPack').required = isPack;
+        $('#qtyLabel').textContent = isPack ? 'Cantidad de paquetes *' : 'Cantidad de unidades *';
+      }
+      function syncCollectionField() { $('#collectionField').hidden = $('#fCategory').value.trim() !== 'Pines'; }
+      function openEditor(id = null, presetCategory = '', allocatePins = false) {
+        state.editingId = id;
+        state.pinDraftMode = allocatePins;
+        form.reset();
+        const item = id ? state.items.find(i=>i.id===id) : null;
+        $('#dialogTitle').textContent = allocatePins ? 'Identificar diseño de pin' : item ? 'Editar artículo' : 'Nuevo artículo';
+        $('#dialogHelp').textContent = allocatePins ? 'La cantidad se restará de los pines pendientes, sin aumentar el total del inventario.' : 'Completa los datos. Puedes modificarlos después.';
+        $('#deleteButton').hidden = !item;
+        $('#fName').value = item?.name || '';
+        $('#fSku').value = item?.sku || nextSku(allocatePins ? 'PIN' : 'INV');
+        $('#fCategory').value = item?.category || presetCategory;
+        $('#fCollection').value = item?.collection || (allocatePins ? 'Emociones' : '');
+        $('#fFormat').value = item?.format || 'unidad';
+        $('#fQty').value = item?.quantity ?? 1;
+        $('#fSold').value = item?.soldQty ?? 0;
+        $('#fPack').value = item?.unitsPerPack ?? 1;
+        $('#fPacksCount').value = item?.packsCount ?? 0;
+        $('#fCategory').readOnly = allocatePins;
+        $('#fFormat').disabled = allocatePins;
+        $('#fQty').max = allocatePins ? String(state.items.find(x=>x.id==='item-009')?.quantity || 0) : '1000000';
+        $('#fNotes').value = item?.notes || '';
+        syncCollectionField();
+        $('#fChecked').checked = item?.verified || false;
+        syncPackField();
+        dialog.showModal();
+        $('#fName').focus();
+      }
+      function closeEditor() { dialog.close(); state.editingId = null; state.pinDraftMode = false; }
+      async function saveEditor(e) {
+        e.preventDefault();
+        if (!form.reportValidity()) return;
+        const original = state.items.find(i => i.id === state.editingId);
+        const candidate = {
+          id: original?.id || uid(),
+          name: $('#fName').value, sku: $('#fSku').value, category: $('#fCategory').value, collection: $('#fCollection').value,
+          format: $('#fFormat').value, quantity: $('#fQty').value, soldQty: $('#fSold').value,
+          unitsPerPack: $('#fFormat').value === 'paquete' ? $('#fPack').value : 1,
+          packsCount: $('#fFormat').value === 'unidad' ? $('#fPacksCount').value : 0,
+          notes: $('#fNotes').value, verified: $('#fChecked').checked,
+          updatedAt: new Date().toISOString()
+        };
+        try {
+          const item = cleanItem(candidate, state.items.length);
+          if (state.items.some(i => i.id !== item.id && i.sku.toLowerCase() === item.sku.toLowerCase())) { toast('Ese código ya pertenece a otro artículo.'); $('#fSku').focus(); return; }
+          let next = original ? state.items.map(i => i.id === item.id ? item : i) : [...state.items,item];
+          if (state.pinDraftMode) {
+            const pending = state.items.find(x=>x.id==='item-009');
+            if (!pending || item.quantity<1 || item.quantity>pending.quantity || item.category!=='Pines' || item.format!=='unidad' || item.packsCount !== 0) { toast('La cantidad del diseño debe estar entre 1 y los pines pendientes.'); return; }
+            next = next.map(x=>x.id===pending.id ? {...x,quantity:x.quantity-item.quantity,verified:false,updatedAt:new Date().toISOString()} : x);
+          }
+          if (await commit(next, state.pinDraftMode ? 'Diseño registrado y descontado del surtido' : original ? 'Artículo actualizado' : 'Artículo agregado')) closeEditor();
+        } catch(error) { toast(error.message); }
+      }
+      function exportJSON() {
+        try {
+          const file = { version:4, catalogRevision:CATALOG_REVISION, store:'Jolugamo Store', application:'jolugamo-inventario', exportedAt:new Date().toISOString(), issues:state.issues, items:state.items };
+          const blob = new Blob([JSON.stringify(file, null, 2)], {type:'application/json;charset=utf-8'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a'); a.href = url;
+          const today = new Date();
+          const localDate = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+          a.download = `jolugamo_store_inventario_${localDate}.json`;
+          document.body.append(a); a.click(); a.remove();
+          setTimeout(()=>URL.revokeObjectURL(url),1000);
+          toast('Archivo JSON preparado');
+        } catch (error) { toast('No fue posible exportar los datos.'); }
+      }
+      async function importJSON(e) {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+        if (file.size > 10 * 1024 * 1024) { toast('El archivo excede 10 MB.'); return; }
+        try {
+          const raw = JSON.parse(await file.text());
+          const rows = Array.isArray(raw) ? raw : raw?.items;
+          const imported=Array.isArray(raw)?{items:validateItems(raw),issues:cleanIssues(null)}:migrateLegacy(raw);
+          const items=imported.items;
+          if (!window.confirm(`¿Reemplazar los ${state.items.length} registros actuales con ${items.length} del archivo?\n\nSe perderán los cambios locales que no hayas exportado.`)) return;
+          const priorIssues=state.issues; state.issues=imported.issues;
+          if (await commit(items, `${items.length} registros importados`)) { state.category = 'Todas'; state.status = 'all'; $('#statusFilter').value = 'all'; $('#searchInput').value = ''; state.search = ''; render(); } else { state.issues=priorIssues; }
+        } catch(error) { console.error(error); toast(error.message || 'JSON inválido.'); }
+      }
+      async function init() {
+        await storage.init();
+        $('#saveStatusText').textContent = storage.mode === 'indexeddb' ? 'Guardado en navegador' : storage.mode === 'localstorage' ? 'Guardado local' : 'Sin guardado persistente';
+        if (storage.mode === 'memory') { $('.status-dot').style.background='#e5a047'; toast('Almacenamiento bloqueado: exporta tus datos antes de salir.'); }
+        try {
+          const saved = await storage.read();
+          if (saved !== null) {
+            const migrated = migrateLegacy(saved);
+            state.items = migrated.items;
+            state.issues=migrated.issues;
+            if (migrated.migrated) await persist();
+          } else {
+            state.items = validateItems(seed);
+            state.issues=cleanIssues(null);
+            await persist();
+          }
+        } catch (error) {
+          console.error(error);
+          state.items = validateItems(seed);
+          state.issues=cleanIssues(null);
+          toast('No fue posible leer los datos anteriores. Revisa los permisos del navegador.');
+        }
+        render();
+        $('#topAdd').addEventListener('click',()=>openEditor());
+        $('#resolveIssue').addEventListener('click',async()=>{
+          const issue=state.issues.find(i=>i.id==='snoopy-halloween-damaged-1');
+          if(!issue) return;
+          const newResolved=!issue.resolved;
+          if(!confirm(newResolved?'¿Confirmas que la pieza rota ya fue identificada y retirada/reparada?\n\nEste control dejará de restarla del stock vendible. Ajusta el registro correspondiente si la retiras físicamente.':'¿Restablecer el aviso de una unidad rota de Snoopy Halloween?')) return;
+          const prev=state.issues;
+          state.issues=prev.map(x=>x.id===issue.id?{...x,resolved:newResolved}:x);
+          if(!await commit(state.items,newResolved?'Aviso de daño resuelto':'Daño restablecido')) state.issues=prev;
+        });
+        $('#heroAdd').addEventListener('click',()=>openEditor());
+        $('#pinAdd').addEventListener('click',()=>{
+          const pending=state.items.find(x=>x.id==='item-009');
+          if (!pending || pending.quantity<1) { toast('No quedan pines pendientes por identificar.'); return; }
+          openEditor(null, 'Pines', true);
+        });
+        $('#heroExport').addEventListener('click',exportJSON);
+        $('#sideExport').addEventListener('click',exportJSON);
+        $('#sideImport').addEventListener('click',()=>$('#importFile').click());
+        $('#importFile').addEventListener('change',importJSON);
+        $('#searchInput').addEventListener('input',(e)=>{state.search=e.target.value.trim();render();});
+        $('#statusFilter').addEventListener('change',(e)=>{state.status=e.target.value;render();});
+        $('#categoryFilters').addEventListener('click',(e)=>{const btn=e.target.closest('button[data-category]');if(btn){state.category=btn.dataset.category;render();}});
+        $('#itemList').addEventListener('click',async(e)=>{
+          const summary=e.target.closest('summary[data-collection]');
+          if(summary) {
+            const col=summary.dataset.collection;
+            if(summary.parentElement.open) state.openCollections.delete(col);
+            else state.openCollections.add(col);
+            return;
+          }
+          const btn=e.target.closest('button[data-act]');
+          if(!btn) return;
+          const id=btn.closest('article[data-id]')?.dataset.id;
+          const item=state.items.find(i=>i.id===id);
+          if(!item) return;
+          const action=btn.dataset.act;
+          if(action==='edit') { openEditor(id); return; }
+          if(action==='sellall' && !confirm(`¿Marcar las ${item.quantity} existencias restantes de «${item.name}» como vendidas?`)) return;
+          if((action==='sell'||action==='sellall') && item.category==='Pines' && item.collection==='Snoopy · Halloween') {
+            if(action==='sellall' || activeDamage('Snoopy · Halloween')>=stockByCollection('Snoopy · Halloween')) {toast('Queda 1 Snoopy Halloween roto. Identifica su diseño antes de marcar más ventas.');return;}
+          }
+          const next = state.items.map(i => {
+            if(i.id!==id) return i;
+            if(action==='plus' && i.quantity<1000000) return {...i,quantity:i.quantity+1,updatedAt:new Date().toISOString()};
+            if(action==='minus' && i.quantity>0) return {...i,quantity:i.quantity-1,updatedAt:new Date().toISOString()};
+            if(action==='toggle') return {...i,verified:!i.verified,updatedAt:new Date().toISOString()};
+            if(action==='sell' && i.quantity>0) return {...i,quantity:i.quantity-1,soldQty:i.soldQty+1,updatedAt:new Date().toISOString()};
+            if(action==='unsell' && i.soldQty>0) return {...i,quantity:i.quantity+1,soldQty:i.soldQty-1,updatedAt:new Date().toISOString()};
+            if(action==='sellall' && i.quantity>0) return {...i,quantity:0,soldQty:i.soldQty+i.quantity,updatedAt:new Date().toISOString()};
+            return i;
+          });
+          btn.disabled = true;
+          await commit(next, action==='toggle' ? (item.verified ? 'Revisión retirada' : 'Artículo revisado') : action==='sell' || action==='sellall' ? 'Venta registrada y stock actualizado' : action==='unsell' ? 'Venta revertida' : null);
+        });
+        $('#closeDialog').addEventListener('click',closeEditor);
+        $('#cancelDialog').addEventListener('click',closeEditor);
+        $('#fFormat').addEventListener('change',syncPackField);
+        $('#fCategory').addEventListener('input',syncCollectionField);
+        form.addEventListener('submit',saveEditor);
+        $('#deleteButton').addEventListener('click',async()=>{
+          const item=state.items.find(i=>i.id===state.editingId);
+          if(!item || !confirm(`¿Eliminar «${item.name}» del inventario?`)) return;
+          if(await commit(state.items.filter(i=>i.id!==item.id),'Artículo eliminado')) closeEditor();
+        });
+        dialog.addEventListener('click',(e)=>{if(e.target===dialog) closeEditor();});
+        dialog.addEventListener('close',()=>{state.editingId=null;state.pinDraftMode=false;$('#fCategory').readOnly=false;$('#fFormat').disabled=false;$('#fQty').max='1000000';});
+      }
+      init();
+      if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+        window.addEventListener('load',()=>navigator.serviceWorker.register('./jolugamo-sw.js').catch(err=>console.info('Modo sin instalación PWA:',err)));
+      }
+    })();
+  </script>
+</body>
+</html>
